@@ -3,7 +3,7 @@ from PIL import Image, ImageDraw
 
 MAX_DEPTH = 8
 DETAIL_THRESHOLD = 5# 13
-SIZE_MULT = 1
+SIZE_MULTIPLIER = 1
 
 def Quadrant(image, bbox, depth):
     quadrant = {}
