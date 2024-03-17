@@ -37,6 +37,7 @@ def Quadrant(image, bbox, depth):
 
     quadrant['detail'] = Get_Detail(hist) # calculating the detail intensity of the quadrant
     quadrant['colour'] = Average_Colour(image) # calculating the average colour of the quadrant
+    return quadrant
 
 def Split_Quadrant(quadrant, image):
     '''
