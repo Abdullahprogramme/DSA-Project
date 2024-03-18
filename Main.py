@@ -18,7 +18,7 @@ def Get_Detail(histogram):
     '''
     red_detail = Weighted_Average(histogram[:256]) # taking values from 0 to 255 for red colour channel
     green_detail = Weighted_Average(histogram[256:512]) # taking values from 256 to 511 for green colour channel
-    blue_detail = Weighted_Average(histogram[512:768]) # taking values from 512 to 767 for blue colour channel
+    blue_detail = weighted_Average(histogram[512:768]) # taking values from 512 to 767 for blue colour channel
 
     detail_intensity = red_detail * 0.2989 + green_detail * 0.5870 + blue_detail * 0.1140  # weighted average of the three colour channels for eye sensitivity
 
@@ -59,20 +59,7 @@ def Split_Quadrant(quadrant, image):
 
     quadrant['children'] = [upper_left, upper_right, lower_left, lower_right] # storing the children of the quadrant in the quadrant dictionary
 
-def Quad_Tree(image):
-    '''
-    description:
-        This function creates a quad tree of the input image.
-    Args:
-        image: input image
-    '''
-    quad_tree = {}
-    quad_tree['width'], quad_tree['height'] = image.size # getting the width and height of the image
-    quad_tree['max_depth'] = 0
-    
-    Start(quad_tree, image) # starting the compression of the image by creating a quad tree of the image
-
-def Start(quad_tree, image):
+def Start_QuadTree(image):
     '''
     description:
         This function starts the compression of the image by creating a quad tree of the image.
@@ -80,9 +67,10 @@ def Start(quad_tree, image):
         image: input image
     '''
     root = Quadrant(image, image.getbbox(), 0) # creating the root quadrant of the image
-    Build(quad_tree, root, image) # building the quad tree of the image
+    max_depth = Build(root, image, 0) # building the quad tree of the image
+    return root, max_depth
 
-def Build(quad_tree, root, image):
+def Build(root, image, max_depth):
     '''
     description:
         This function builds the quad tree of the input image.
@@ -92,13 +80,27 @@ def Build(quad_tree, root, image):
         image: input image
     '''
     if root['depth'] > MAX_DEPTH or root['detail'] < DETAIL_THRESHOLD: # checking if the depth of the quadrant is greater than the maximum depth or the detail intensity of the quadrant is less than the detail threshold
-        if root['depth'] > quad_tree['max_depth']: 
-            quad_tree['max_depth'] = root['depth']
+        if root['depth'] > max_depth: 
+            max_depth = root['depth']
 
         root['leaf'] = True # assigning the quadrant to a leaf node and stopping the recursion
-        return
+        return max_depth
     
     Split_Quadrant(root, image) # splitting the quadrant into 4 new quadrants
 
     for child in root['children']: # iterating through the children of the quadrant
-        Build(quad_tree, child, image) # building the quad tree of the child
+        max_depth = Build(child, image, max_depth) # building the quad tree of the child
+    return max_depth
+
+if __name__ == '__main__':
+    image_path = 'BMI.jpg'
+    image = Image.open(image_path) # opening the image
+    image = image.resize((image.size[0] * SIZE_MULTIPLIER, image.size[1] * SIZE_MULTIPLIER)) # resizing the image
+
+    root, max_depth = Start_QuadTree(image)
+    depth = 7
+    image = Create_Image(root, max_depth, depth, show_lines=False)
+    Create_Gif(root, max_depth, "quadtree.gif", show_lines=True)
+    
+    image.show() # displaying the image
+    image.save('quadtree.png') # saving the image
