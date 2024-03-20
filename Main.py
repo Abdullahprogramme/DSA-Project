@@ -18,7 +18,7 @@ def Get_Detail(histogram):
     '''
     red_detail = Weighted_Average(histogram[:256]) # taking values from 0 to 255 for red colour channel
     green_detail = Weighted_Average(histogram[256:512]) # taking values from 256 to 511 for green colour channel
-    blue_detail = weighted_Average(histogram[512:768]) # taking values from 512 to 767 for blue colour channel
+    blue_detail = Weighted_Average(histogram[512:768]) # taking values from 512 to 767 for blue colour channel
 
     detail_intensity = red_detail * 0.2989 + green_detail * 0.5870 + blue_detail * 0.1140  # weighted average of the three colour channels for eye sensitivity
 
