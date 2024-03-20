@@ -5,6 +5,26 @@ MAX_DEPTH = 8
 DETAIL_THRESHOLD = 5# 13
 SIZE_MULTIPLIER = 1
 
+def Average_Colour(image):
+    """
+    Description:
+        Calculates the average color of an image represented in PIL format.
+
+    Args:
+        We are giving an image.
+
+    Returns:
+        A tuple of three integers representing the average red, green, and blue values for the entire image.
+    """
+
+
+    image_arr = np.asarray(image) # convert image to np array
+    # get average of whole image
+    avg_color_per_row = np.average(image_arr, axis=0)
+    avg_color = np.average(avg_color_per_row, axis=0) 
+
+    return (int(avg_color[0]), int(avg_color[1]), int(avg_color[2]))
+
 def Get_Detail(histogram):
     '''
     Description: 
