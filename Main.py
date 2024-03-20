@@ -92,6 +92,96 @@ def Build(root, image, max_depth):
         max_depth = Build(child, image, max_depth) # building the quad tree of the child
     return max_depth
 
+def Create_Image(root, max_depth, custom_depth, show_line=False):
+    '''
+    description:
+        This function creates an image of the quad tree.
+    Args:
+        root: dictionary to store the details of the root quadrant
+        max_depth: maximum depth of the quad tree
+        custom_depth: depth of the quad tree
+        show_line: flag to show the lines in the image
+    Returns:
+        image: image of the quad tree
+    '''
+    width, height = root['bbox'][2], root['bbox'][3]
+    image = Image.new('RGB', (int(width), int(height)))
+
+    draw = ImageDraw.Draw(image)
+    draw.rectangle((0, 0, width, height), (0, 0, 0))
+
+    leaf_quadrants = Get_Leaf_Quadrants(root, max_depth, custom_depth)
+    for quadrant in leaf_quadrants:
+        if show_line:
+            draw.rectangle(quadrant['bbox'], quadrant['colour'], (0, 0, 0))
+        else:
+            draw.rectangle(quadrant['bbox'], quadrant['colour'])
+
+    return image
+
+def Get_Leaf_Quadrants(root, max_depth, depth):
+    '''
+    description:
+        This function gets the leaf quadrants of the quad tree.
+    Args:
+        root: dictionary to store the details of the root quadrant
+        max_depth: maximum depth of the quad tree
+        depth: depth of the quad tree
+    Returns:
+        quadrants: list of leaf quadrants
+    '''
+
+    if depth > max_depth:
+        raise ValueError('A depth larger than the trees depth was given')
+
+    quandrants = []
+    Recursive_Search(root, depth, quandrants.append)
+    return quandrants
+
+def Recursive_Search(quadrant, max_depth, append_leaf):
+    '''
+    description:
+        This function recursively searches the quad tree.
+    Args:
+        quadrant: dictionary to store the details of the quadrant
+        max_depth: maximum depth of the quad tree
+        append_leaf: flag to append the leaf quadrant
+    '''
+
+    if quadrant['leaf'] == True and quadrant['depth'] == max_depth:
+        append_leaf(quadrant)
+    elif quadrant['children'] != None:
+        for child in quadrant['children']:
+            Recursive_Search(child, max_depth, append_leaf)
+
+def Create_Gif(root, max_depth, file_name, duration=1000, loop=0, show_lines=False):
+    '''
+    description:
+        This function creates a gif of the quad tree.
+    Args:
+        root: dictionary to store the details of the root quadrant
+        max_depth: maximum depth of the quad tree
+        file_name: name of the gif file
+        duration: duration of the gif
+        loop: flag to loop the gif
+        show_lines: flag to show the lines in the gif
+    '''
+
+    gif = []
+    end_product_image = Create_Image(root, max_depth, max_depth, show_lines=show_lines)
+
+    for i in range(max_depth):
+        image = Create_Image(root, max_depth, i, show_lines=show_lines)
+        gif.append(image)
+    for _ in range(4):
+        gif.append(end_product_image)
+    gif[0].save(
+        file_name,
+        save_all=True,
+        append_images=gif[1:],
+        duration=duration, loop=loop)
+
+
 if __name__ == '__main__':
     image_path = 'BMI.jpg'
     image = Image.open(image_path) # opening the image
