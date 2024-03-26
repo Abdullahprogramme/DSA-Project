@@ -14,6 +14,7 @@ We are making a quad tree which recursively breaks a image into four quadrants b
 3. ImageDraw from PIL
 
 ### To clone repositry use the provided command:
-  git clone https://github.com/Abdullahprogramme/DSA-Project
+```bash
+git clone https://github.com/Abdullahprogramme/DSA-Project
 
 ### Change the path to the image attached or attach any other image if you want and adjust accordingly.
