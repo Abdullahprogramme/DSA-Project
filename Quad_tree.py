@@ -157,7 +157,12 @@ def Get_Leaf_Quadrants(root, max_depth, depth):
     quandrants = []
     Recursive_Search(root, depth, quandrants.append)
     return quandrants
-
+def Recursive_Search(quadrant,max_depth,append_leaf):
+    if quadrant['leaf']==True or quadrant['depth']==max_depth:
+        append_leaf(quadrant)
+    elif quadrant['children']!=None:
+        for child in quadrant['children']:
+            Recursive_Search(child, max_depth, append_leaf)
 def Recursive_Search(quadrant, max_depth, append_leaf):
     '''
     description:
