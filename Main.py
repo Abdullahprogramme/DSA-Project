@@ -2,7 +2,7 @@ import numpy as np
 from PIL import Image, ImageDraw
 
 MAX_DEPTH = 8
-DETAIL_THRESHOLD = 5# 13
+DETAIL_THRESHOLD = 5 #13
 SIZE_MULTIPLIER = 1
 
 def Average_Colour(image):
@@ -149,6 +149,17 @@ def Create_Gif(root, max_depth, file_name, duration=1000, loop=0, show_lines=Fal
         save_all=True,
         append_images=gif[1:],
         duration=duration, loop=loop)
+    
+def get_leaf_quadrants(root, max_depth, user_depth):
+        if user_depth > max_depth:
+            raise ValueError('A depth larger than the trees depth was given')
+
+        quadrants = []
+
+        # search recursively down the quadtree
+        recursive_search(root, max_depth, quadrants.append)
+
+        return quadrants
 
 def Create_Image(root, max_depth, depth, show_lines=False):
         # create blank image canvas
@@ -167,16 +178,16 @@ def Create_Image(root, max_depth, depth, show_lines=False):
 
         return image
 
-def get_leaf_quadrants(self, depth):
-        if depth > self.max_depth:
-            raise ValueError('A depth larger than the trees depth was given')
+def recursive_search(tree, quadrant, max_depth, append_leaf):
+        # append if quadrant is a leaf
+        if quadrant.leaf == True or quadrant.depth == max_depth:
+            append_leaf(quadrant)
 
-        quadrants = []
+        # otherwise keep recursing
+        elif quadrant.children != None:
+            for child in quadrant.children:
+                recursive_search(tree, child, max_depth, append_leaf)
 
-        # search recursively down the quadtree
-        self.recursive_search(self, self.root, depth, quadrants.append)
-
-        return quadrants
 
 if __name__ == '__main__':
     image_path = 'BMI.jpg'
@@ -184,8 +195,8 @@ if __name__ == '__main__':
     image = image.resize((image.size[0] * SIZE_MULTIPLIER, image.size[1] * SIZE_MULTIPLIER)) # resizing the image
 
     root, max_depth = Start_QuadTree(image)
-    depth = 7
-    image = Create_Image(root, max_depth, depth, show_lines=False)
+    user_depth = 7
+    image = Create_Image(root, max_depth, user_depth, show_lines=False)
     Create_Gif(root, max_depth, "quadtree.gif", show_lines=True)
     
     image.show() # displaying the image
