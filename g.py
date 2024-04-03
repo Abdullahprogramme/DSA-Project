@@ -156,7 +156,7 @@ class QuadTree():
 
 if __name__ == '__main__':
     #image_path = "./images/eye.jpg"
-    image_path = "BMI.jpg"
+    image_path = "D:/DSA-Project/DSA-Project-main/BMI.jpg"
 
     # load image
     image = Image.open(image_path)
