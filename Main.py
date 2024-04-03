@@ -2,7 +2,7 @@ import numpy as np
 from PIL import Image, ImageDraw
 
 MAX_DEPTH = 8
-DETAIL_THRESHOLD = 5# 13
+DETAIL_THRESHOLD = 13
 SIZE_MULTIPLIER = 1
 
 def Weighted_Average(histogram):
@@ -142,6 +142,22 @@ def Get_Leaf_Quadrants(root, max_depth, user_depth):
     Recursive_Search(root, user_depth, quandrants.append)
     return quandrants
 
+def Recursive_Search(quadrant, max_depth, append_leaf):
+    '''
+    description:
+        This function recursively searches the quad tree.
+    Args:
+        quadrant: dictionary to store the details of the quadrant
+        max_depth: maximum depth of the quad tree
+        append_leaf: flag to append the leaf quadrant
+    '''
+
+    if quadrant['leaf'] == True or quadrant['depth'] == max_depth:
+        append_leaf(quadrant)
+    elif quadrant['children'] != None:
+        for child in quadrant['children']:
+            Recursive_Search(child, max_depth, append_leaf)
+
 def Create_Gif(root, max_depth, file_name, duration=1000, loop=0, show_lines=False):
     '''
     description:
@@ -180,5 +196,5 @@ if __name__ == '__main__':
     image = Create_Image(root, max_depth, user_depth, show_lines=False)
     Create_Gif(root, max_depth, "quadtree.gif", show_lines=True)
     
-    image.show() # displaying the image
-    image.save('quadtree.png') # saving the image
+    # image.show() # displaying the image
+    image.save('quadtree.jpg') # saving the image
