@@ -5,25 +5,16 @@ MAX_DEPTH = 8
 DETAIL_THRESHOLD = 5# 13
 SIZE_MULTIPLIER = 1
 
-def Average_Colour(image):
-    """
-    Description:
-        Calculates the average color of an image represented in PIL format.
+def Weighted_Average(histogram):
+    total = sum(histogram)
+    error = value = 0
 
-    Args:
-        We are giving an image.
+    if total > 0:
+        value = sum(i * x for i, x in enumerate(histogram)) / total
+        error = sum(x * (value - i) ** 2 for i, x in enumerate(histogram)) / total
+        error = error ** 0.5
 
-    Returns:
-        A tuple of three integers representing the average red, green, and blue values for the entire image.
-    """
-
-
-    image_arr = np.asarray(image) # convert image to np array
-    # get average of whole image
-    avg_color_per_row = np.average(image_arr, axis=0)
-    avg_color = np.average(avg_color_per_row, axis=0) 
-
-    return (int(avg_color[0]), int(avg_color[1]), int(avg_color[2]))
+    return error
 
 def Get_Detail(histogram):
     '''
@@ -43,6 +34,26 @@ def Get_Detail(histogram):
     detail_intensity = red_detail * 0.2989 + green_detail * 0.5870 + blue_detail * 0.1140  # weighted average of the three colour channels for eye sensitivity
 
     return detail_intensity
+
+def Average_Colour(image):
+    """
+    Description:
+        Calculates the average color of an image represented in PIL format.
+
+    Args:
+        We are giving an image.
+
+    Returns:
+        A tuple of three integers representing the average red, green, and blue values for the entire image.
+    """
+
+
+    image_arr = np.asarray(image) # convert image to np array
+    # get average of whole image
+    avg_color_per_row = np.average(image_arr, axis=0)
+    avg_color = np.average(avg_color_per_row, axis=0) 
+
+    return (int(avg_color[0]), int(avg_color[1]), int(avg_color[2]))
 
 def Quadrant(image, bbox, depth):
     quadrant = {} # dictionary to store the details of the quadrant
@@ -112,6 +123,68 @@ def Build(root, image, max_depth):
         max_depth = Build(child, image, max_depth) # building the quad tree of the child
     return max_depth
 
+def Create_Image(root, max_depth, user_depth, show_line=False):
+    '''
+    description:
+        This function creates an image of the quad tree.
+    Args:
+        root: dictionary to store the details of the root quadrant
+        max_depth: maximum depth of the quad tree
+        custom_depth: depth of the quad tree
+        show_line: flag to show the lines in the image
+    Returns:
+        image: image of the quad tree
+    '''
+    width, height = root['bbox'][2], root['bbox'][3]
+    image = Image.new('RGB', (int(width), int(height)))
+
+    draw = ImageDraw.Draw(image)
+    draw.rectangle((0, 0, width, height), (0, 0, 0))
+
+    leaf_quadrants = Get_Leaf_Quadrants(root, max_depth, user_depth)
+    for quadrant in leaf_quadrants:
+        if show_line:
+            draw.rectangle(quadrant['bbox'], quadrant['colour'], (0, 0, 0))
+        else:
+            draw.rectangle(quadrant['bbox'], quadrant['colour'])
+
+    return image
+
+def Get_Leaf_Quadrants(root, max_depth, user_depth):
+    '''
+    description:
+        This function gets the leaf quadrants of the quad tree.
+    Args:
+        root: dictionary to store the details of the root quadrant
+        max_depth: maximum depth of the quad tree
+        depth: depth of the quad tree
+    Returns:
+        quadrants: list of leaf quadrants
+    '''
+
+    if user_depth > max_depth:
+        raise ValueError('A depth larger than the trees depth was given')
+
+    quandrants = []
+    Recursive_Search(root, user_depth, quandrants.append)
+    return quandrants
+
+def Recursive_Search(quadrant, max_depth, append_leaf):
+    '''
+    description:
+        This function recursively searches the quad tree.
+    Args:
+        quadrant: dictionary to store the details of the quadrant
+        max_depth: maximum depth of the quad tree
+        append_leaf: flag to append the leaf quadrant
+    '''
+
+    if quadrant['leaf'] == True and quadrant['depth'] == max_depth:
+        append_leaf(quadrant)
+    elif quadrant['children'] != None:
+        for child in quadrant['children']:
+            Recursive_Search(child, max_depth, append_leaf)
+
 def Create_Gif(root, max_depth, file_name, duration=1000, loop=0, show_lines=False):
     '''
     description:
@@ -146,8 +219,8 @@ if __name__ == '__main__':
     image = image.resize((image.size[0] * SIZE_MULTIPLIER, image.size[1] * SIZE_MULTIPLIER)) # resizing the image
 
     root, max_depth = Start_QuadTree(image)
-    depth = 7
-    image = Create_Image(root, max_depth, depth, show_lines=False)
+    user_depth = 7
+    image = Create_Image(root, max_depth, user_depth, show_lines=False)
     Create_Gif(root, max_depth, "quadtree.gif", show_lines=True)
     
     image.show() # displaying the image
