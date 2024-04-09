@@ -158,7 +158,7 @@ def Recursive_Search(quadrant, max_depth, append_leaf):
         for child in quadrant['children']:
             Recursive_Search(child, max_depth, append_leaf)
 
-def Create_Gif(root, max_depth, file_name, duration=1000, loop=0, show_lines=False):
+def Create_Gif(root, max_depth, gif_depth, file_name, duration=1000, loop=0, show_lines=False):
     '''
     description:
         This function creates a gif of the quad tree.
@@ -172,9 +172,9 @@ def Create_Gif(root, max_depth, file_name, duration=1000, loop=0, show_lines=Fal
     '''
 
     gif = []
-    end_product_image = Create_Image(root, max_depth, max_depth, show_lines=show_lines)
+    end_product_image = Create_Image(root, max_depth, gif_depth, show_lines=show_lines)
 
-    for i in range(max_depth):
+    for i in range(gif_depth):
         image = Create_Image(root, max_depth, i, show_lines=show_lines)
         gif.append(image)
     for _ in range(4):
@@ -194,7 +194,7 @@ if __name__ == '__main__':
     root, max_depth = Start_QuadTree(image)
     user_depth = 7
     image = Create_Image(root, max_depth, user_depth, show_lines=False)
-    Create_Gif(root, max_depth, "quadtree.gif", show_lines=True)
+    Create_Gif(root, max_depth, user_depth, "quadtree.gif", show_lines=True)
     
     # image.show() # displaying the image
     image.save('quadtree.jpg') # saving the image
