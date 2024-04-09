@@ -18,3 +18,7 @@ We are making a quad tree which recursively breaks a image into four quadrants b
 git clone https://github.com/Abdullahprogramme/DSA-Project
 ```
 ### Change the path to the image attached or attach any other image if you want and adjust accordingly.
+
+![Original Image](./readme_file_images/BMI.jpg)
+![Compressed Image](./readme_file_images/Compressed.jpg)
+![Compressed Image GIF](./readme_file_images/quadtree.gif)
