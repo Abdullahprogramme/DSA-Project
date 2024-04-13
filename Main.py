@@ -123,6 +123,42 @@ def Build(root, image, max_depth):
         max_depth = Build(child, image, max_depth) # building the quad tree of the child
     return max_depth
 
+def Create_Image(root, max_depth, user_depth, show_lines=False):
+    """
+    Description:
+        Create an image representation of the quadtree with a specified depth.
+
+    Args:
+        root: Dictionary representing the root quadrant.
+        max_depth: Maximum depth of the quadtree.
+        depth: Depth of the image to be created.
+        show_lines: Flag to indicate whether to draw lines around quadrants.
+
+    Returns:
+        An Image object representing the quadtree visualization.
+    """
+    # Get the width and height of the image
+    width, height = root['bbox'][2], root['bbox'][3]
+
+    # Create a blank image canvas
+    image = Image.new('RGB', (int(width), int(height)))
+    draw = ImageDraw.Draw(image)
+    draw.rectangle((0, 0, width, height), (0, 0, 0))
+
+    # Get leaf quadrants for the specified depth
+    leaf_quadrants = Get_Leaf_Quadrants(root, max_depth, user_depth)
+
+    # Draw rectangle size of quadrant for each leaf quadrant
+    for quadrant in leaf_quadrants:
+        bbox = quadrant['bbox']
+        color = quadrant['colour']
+        if show_lines:
+            draw.rectangle(bbox, color, outline=(0, 0, 0))
+        else:
+            draw.rectangle(bbox, color)
+
+    return image
+
 def Get_Leaf_Quadrants(root, max_depth, user_depth):
     '''
     description:
@@ -186,8 +222,8 @@ def Create_Gif(root, max_depth, gif_depth, file_name, duration=1000, loop=0, sho
         duration=duration, loop=loop)
 
 
-if __name__ == '__main__':
-    image_path = 'BMI.jpg'
+def main(image_path):
+    # image_path = 'BMI.jpg'
     image = Image.open(image_path) # opening the image
     image = image.resize((image.size[0] * SIZE_MULTIPLIER, image.size[1] * SIZE_MULTIPLIER)) # resizing the image
 
@@ -197,4 +233,5 @@ if __name__ == '__main__':
     Create_Gif(root, max_depth, user_depth, "quadtree.gif", show_lines=True)
     
     # image.show() # displaying the image
-    image.save('quadtree.jpg') # saving the image
+    # image.save('quadtree.jpg') # saving the image
+    return image
