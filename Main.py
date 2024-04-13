@@ -162,21 +162,40 @@ def get_leaf_quadrants(root, max_depth, user_depth):
         return quadrants
 
 def Create_Image(root, max_depth, depth, show_lines=False):
-        # create blank image canvas
-        image = Image.new('RGB', (width, height))
-        draw = ImageDraw.Draw(image)
-        draw.rectangle((0, 0, width, height), (0, 0, 0))
+    """
+    Description:
+        Create an image representation of the quadtree with a specified depth.
 
-        leaf_quadrants = Image.get_leaf_quadrants(depth)
+    Args:
+        root: Dictionary representing the root quadrant.
+        max_depth: Maximum depth of the quadtree.
+        depth: Depth of the image to be created.
+        show_lines: Flag to indicate whether to draw lines around quadrants.
 
-        # draw rectangle size of quadrant for each leaf quadrant
-        for quadrant in leaf_quadrants:
-            if show_lines:
-                draw.rectangle(quadrant.bbox, quadrant.colour, outline=(0, 0, 0))
-            else:
-                draw.rectangle(quadrant.bbox, quadrant.colour)
+    Returns:
+        An Image object representing the quadtree visualization.
+    """
+    # Get the width and height of the image
+    width, height = root['bbox'][2], root['bbox'][3]
 
-        return image
+    # Create a blank image canvas
+    image = Image.new('RGB', (width, height))
+    draw = ImageDraw.Draw(image)
+    draw.rectangle((0, 0, width, height), (0, 0, 0))
+
+    # Get leaf quadrants for the specified depth
+    leaf_quadrants = get_leaf_quadrants(root, max_depth, depth)
+
+    # Draw rectangle size of quadrant for each leaf quadrant
+    for quadrant in leaf_quadrants:
+        bbox = quadrant['bbox']
+        color = quadrant['colour']
+        if show_lines:
+            draw.rectangle(bbox, fill=color, outline=(0, 0, 0))
+        else:
+            draw.rectangle(bbox, fill=color)
+
+    return image
 
 def recursive_search(tree, quadrant, max_depth, append_leaf):
         # append if quadrant is a leaf
