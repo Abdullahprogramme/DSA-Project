@@ -161,7 +161,7 @@ def get_leaf_quadrants(root, max_depth, user_depth):
 
         return quadrants
 
-def Create_Image(root, max_depth, depth, show_lines=False):
+def Create_Image(root, max_depth, user_depth, show_lines=False):
     """
     Description:
         Create an image representation of the quadtree with a specified depth.
@@ -179,21 +179,21 @@ def Create_Image(root, max_depth, depth, show_lines=False):
     width, height = root['bbox'][2], root['bbox'][3]
 
     # Create a blank image canvas
-    image = Image.new('RGB', (width, height))
+    image = Image.new('RGB', (int(width), int(height)))
     draw = ImageDraw.Draw(image)
     draw.rectangle((0, 0, width, height), (0, 0, 0))
 
     # Get leaf quadrants for the specified depth
-    leaf_quadrants = get_leaf_quadrants(root, max_depth, depth)
+    leaf_quadrants = get_leaf_quadrants(root, max_depth, user_depth)
 
     # Draw rectangle size of quadrant for each leaf quadrant
     for quadrant in leaf_quadrants:
         bbox = quadrant['bbox']
         color = quadrant['colour']
         if show_lines:
-            draw.rectangle(bbox, fill=color, outline=(0, 0, 0))
+            draw.rectangle(bbox, color, outline=(0, 0, 0))
         else:
-            draw.rectangle(bbox, fill=color)
+            draw.rectangle(bbox, color)
 
     return image
 
