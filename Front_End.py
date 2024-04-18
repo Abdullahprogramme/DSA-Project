@@ -1,7 +1,11 @@
-from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton, QFileDialog, QLabel
-from PyQt5.QtCore import Qt
-from Main import main
+import os
+import time
+import tempfile
+from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QFileDialog, QLabel, QProgressBar
+from PyQt5.QtCore import Qt, QUrl
 from PyQt5.QtGui import QPixmap, QPalette, QBrush
+from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
+from Main import main
 
 class App(QWidget):
     def __init__(self):
@@ -17,6 +21,36 @@ class App(QWidget):
         layout = QVBoxLayout()
         self.setLayout(layout)
 
+        # Create a horizontal layout for the images
+        image_layout = QHBoxLayout()
+
+        # Create vertical layouts for the original image and its size
+        original_layout = QVBoxLayout()
+        self.label_original = QLabel(self)
+        self.label_original.setFixedSize(400, 400)
+        original_layout.addWidget(self.label_original)
+        self.label_original_size = QLabel(self)
+        self.label_original_size.setStyleSheet("color: white; font-size: 32px;")
+        original_layout.addWidget(self.label_original_size)
+
+        # Create vertical layouts for the compressed image and its size
+        compressed_layout = QVBoxLayout()
+        self.label_compressed = QLabel(self)
+        self.label_compressed.setFixedSize(400, 400)
+        compressed_layout.addWidget(self.label_compressed)
+        self.label_compressed_size = QLabel(self)
+        self.label_compressed_size.setStyleSheet("color: white; font-size: 32px;")
+        compressed_layout.addWidget(self.label_compressed_size)
+
+        # Add the vertical layouts to the horizontal layout
+        image_layout.addLayout(original_layout)
+        image_layout.addLayout(compressed_layout)
+        image_layout.setAlignment(Qt.AlignCenter)
+        image_layout.setSpacing(10)
+
+        # Add the horizontal layout to the main layout
+        layout.addLayout(image_layout)
+
         self.status_label = QLabel('', self)
         self.status_label.setStyleSheet("color: white; font-size: 16px;")
         layout.addWidget(self.status_label)
@@ -28,6 +62,10 @@ class App(QWidget):
         self.button_save = QPushButton('Save Image', self)
         self.button_save.clicked.connect(self.save_image)
         layout.addWidget(self.button_save)
+
+        # Add a progress bar
+        self.progress_bar = QProgressBar(self)
+        layout.addWidget(self.progress_bar)
 
         self.setStyleSheet("""
             QPushButton {
@@ -41,10 +79,25 @@ class App(QWidget):
             QPushButton:hover {
             background-color: #777;
             }
+            QProgressBar {
+            min-width: 100px;
+            margin: 10px 0;
+            color: #fff;
+            font: bold;
+            }
+            QProgressBar::chunk {
+            background-color: #0ff;
+            }
+            original_layout {
+            border: 2px solid white;
+            }
+            compressed_layout {
+            border: 2px solid white;
+            } 
         """)
 
         layout.setAlignment(Qt.AlignCenter)
-        self.setGeometry(100, 100, 600, 400)
+        self.setGeometry(100, 100, 900, 700)  # Adjust the window size here
         self.show()
 
     def resizeEvent(self, event):
@@ -64,20 +117,59 @@ class App(QWidget):
         # Set the palette
         self.setPalette(palette)
 
+    def play_music(self):
+        # Load a music file
+        url = QUrl.fromLocalFile('Complete.mp3')
+        self.player.setMedia(QMediaContent(url))
+
+        # Start playing
+        self.player.play()
+
     def open_image(self):
         options = QFileDialog.Options()
         options |= QFileDialog.ReadOnly
-        self.image_path, _ = QFileDialog.getOpenFileName(self, 'Open Image', '', 'Images (*.png *.xpm *.jpg *.bmp *.gif)', options=options)
+        self.image_path, _ = QFileDialog.getOpenFileName(self, 'Open Image', '', 'Images (*.png *.xpm *.jpg *.bmp)', options=options)
         if self.image_path:
             self.button_open.setEnabled(False)
             self.button_save.setEnabled(False)
             self.status_label.setText('Generating image...')
+            self.progress_bar.setValue(20)
             QApplication.processEvents()
             print('Image path:', self.image_path)
             self.compressed_image = main(self.image_path)
+
+            self.progress_bar.setValue(80)
+            time.sleep(1)
+            
+            # Create a media player object
+            self.player = QMediaPlayer()
+            # Start playing music
+            self.play_music()
+
             self.status_label.setText('Image generation complete.')
             self.button_open.setEnabled(True)
             self.button_save.setEnabled(True)
+
+            # Update the progress bar
+            self.progress_bar.setValue(100)
+
+            # Save the image to a temporary file
+            temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".png")
+            self.compressed_image.save(temp_file.name)
+
+            # Display the original and compressed images
+            pixmap_original = QPixmap(self.image_path).scaled(400, 400, Qt.KeepAspectRatio)
+            pixmap_compressed = QPixmap(temp_file.name).scaled(400, 400, Qt.KeepAspectRatio)
+            self.label_original.setPixmap(pixmap_original)
+            self.label_compressed.setPixmap(pixmap_compressed)
+
+            # Display the sizes of the images
+            original_size = os.path.getsize(self.image_path) / 1024  # size in KB
+            compressed_size = os.path.getsize(temp_file.name) / 1024  # size in KB
+            
+            self.label_original_size.setText(f'Original size: {original_size:.2f} KB')
+            self.label_compressed_size.setText(f'Compressed size: {compressed_size:.2f} KB')
+
 
     def save_image(self):
         options = QFileDialog.Options()
