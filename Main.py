@@ -235,3 +235,12 @@ def main(image_path):
     # image.show() # displaying the image
     # image.save('quadtree.jpg') # saving the image
     return image
+
+# High quality image:
+# user_depth = 8, MAX_DEPTH = 8, DETAIL_THRESHOLD = 5, SIZE_MULTIPLIER = 1
+
+# Low quality image:
+# user_depth = 6, MAX_DEPTH = 8, DETAIL_THRESHOLD = 10, SIZE_MULTIPLIER = 1
+
+# Medium quality image:
+# user_depth = 7, MAX_DEPTH = 8, DETAIL_THRESHOLD = 8, SIZE_MULTIPLIER = 1
