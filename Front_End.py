@@ -1,8 +1,8 @@
 import os
 import time
 import tempfile
-from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QFileDialog, QLabel, QProgressBar
-from PyQt5.QtCore import Qt, QUrl
+from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QFileDialog, QLabel, QProgressBar, QRadioButton, QSizePolicy
+from PyQt5.QtCore import Qt, QUrl, QRect
 from PyQt5.QtGui import QPixmap, QPalette, QBrush
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 from Main import main
@@ -50,6 +50,34 @@ class App(QWidget):
 
         # Add the horizontal layout to the main layout
         layout.addLayout(image_layout)
+
+        # Create a horizontal box layout
+        # hbox = QHBoxLayout()
+
+        self.instructions_label = QLabel("Please select your preference", self)
+        self.instructions_label.setWordWrap(True)
+        self.instructions_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        self.instructions_label.setStyleSheet("color: white; font-size: 16px;")
+        layout.addWidget(self.instructions_label)
+
+        self.button_Low = QRadioButton("Low Quality", self)
+        self.button_Low.setStyleSheet("color: white; font-size: 16px;")
+        layout.addWidget(self.button_Low)
+
+        self.button_Mid = QRadioButton("Medium Quality", self)
+        self.button_Mid.setStyleSheet("color: white; font-size: 16px;")
+        layout.addWidget(self.button_Mid)
+
+        self.button_High = QRadioButton("High Quality (Default)", self)
+        self.button_High.setStyleSheet("color: white; font-size: 16px;")
+        self.button_High.setChecked(True)
+        layout.addWidget(self.button_High)
+
+        # # Set the alignment to center
+        # hbox.setAlignment(Qt.AlignCenter)
+
+        # Add the horizontal box layout to the existing layout
+        # layout.addLayout(hbox)
 
         self.status_label = QLabel('', self)
         self.status_label.setStyleSheet("color: white; font-size: 16px;")
@@ -100,6 +128,16 @@ class App(QWidget):
         self.setGeometry(100, 100, 900, 700)  # Adjust the window size here
         self.show()
 
+    def check_radio(self):
+        if self.loq_radio.isChecked():
+            return 'low'
+        elif self.med_radio.isChecked():
+            return 'medium'
+        elif self.hiq_radio.isChecked():
+            return 'high'
+        else:
+            return -1
+
     def resizeEvent(self, event):
         self.updateBackground()
         super().resizeEvent(event)
@@ -125,10 +163,29 @@ class App(QWidget):
         # Start playing
         self.player.play()
 
+    def set_quality(self):
+        if self.button_Low.isChecked():
+            self.user_depth = 6 
+            self.MAX_DEPTH = 9
+            self.DETAIL_THRESHOLD = 10
+            self.SIZE_MULTIPLIER = 1
+        elif self.button_Mid.isChecked():
+            self.user_depth = 7
+            self.MAX_DEPTH = 9
+            self.DETAIL_THRESHOLD = 7
+            self.SIZE_MULTIPLIER = 1
+        else:
+            self.user_depth = 9
+            self.MAX_DEPTH = 9
+            self.DETAIL_THRESHOLD = 3
+            self.SIZE_MULTIPLIER = 1
+        
+        return self.user_depth, self.MAX_DEPTH, self.DETAIL_THRESHOLD, self.SIZE_MULTIPLIER
+
     def open_image(self):
         options = QFileDialog.Options()
         options |= QFileDialog.ReadOnly
-        self.image_path, _ = QFileDialog.getOpenFileName(self, 'Open Image', '', 'Images (*.png *.xpm *.jpg *.bmp)', options=options)
+        self.image_path, _ = QFileDialog.getOpenFileName(self, 'Open Image', '', 'Images (*.png *.jpeg *.jpg)', options=options)
         if self.image_path:
             self.button_open.setEnabled(False)
             self.button_save.setEnabled(False)
@@ -136,7 +193,8 @@ class App(QWidget):
             self.progress_bar.setValue(20)
             QApplication.processEvents()
             print('Image path:', self.image_path)
-            self.compressed_image = main(self.image_path)
+            self.user_depth, self.MAX_DEPTH, self.DETAIL_THRESHOLD, self.SIZE_MULTIPLIER = self.set_quality()
+            self.compressed_image = main(self.image_path, self.user_depth, self.MAX_DEPTH, self.DETAIL_THRESHOLD, self.SIZE_MULTIPLIER)
 
             self.progress_bar.setValue(80)
             time.sleep(1)
