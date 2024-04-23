@@ -232,7 +232,7 @@ class App(QWidget):
     def save_image(self):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        self.save_path, _ = QFileDialog.getSaveFileName(self, 'Save Image As', '', 'Images (*.png *.xpm *.jpg *.bmp *.gif)', options=options)
+        self.save_path, _ = QFileDialog.getSaveFileName(self, 'Save Image As', '', 'Images (*.png *.jpeg *.jpg)', options=options)
         if self.save_path and self.compressed_image:
             print('Save path:', self.save_path)
             self.compressed_image.save(self.save_path)
