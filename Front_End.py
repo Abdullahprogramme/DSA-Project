@@ -6,9 +6,12 @@ from PyQt5.QtCore import Qt, QUrl, QRect
 from PyQt5.QtGui import QPixmap, QPalette, QBrush
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 from Main import main
+# all imports are done here
 
 class App(QWidget):
     def __init__(self):
+        # Initialize the parent class
+        # Set the title of the window and load the background image
         super().__init__()
         self.title = 'QuadTree Image Compressor'
         self.pixmap = QPixmap("Background_Image.jpg")
@@ -18,6 +21,7 @@ class App(QWidget):
         self.setWindowTitle(self.title)
         self.updateBackground()
 
+        # Create a vertical layout for the main window
         layout = QVBoxLayout()
         self.setLayout(layout)
 
@@ -54,20 +58,24 @@ class App(QWidget):
         # Create a horizontal box layout
         Radiobox = QHBoxLayout()
 
+        # Create the main label for the selection of radio buttons
         self.instructions_label = QLabel("Please select your preference", self)
         self.instructions_label.setWordWrap(True)
         self.instructions_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
         self.instructions_label.setStyleSheet("color: white; font-size: 16px;")
         layout.addWidget(self.instructions_label)
 
+        # Create the low quality radio button
         self.button_Low = QRadioButton("Low Quality", self)
         self.button_Low.setStyleSheet("color: white; font-size: 16px;")
         Radiobox.addWidget(self.button_Low)
 
+        # Create the medium quality radio button
         self.button_Mid = QRadioButton("Medium Quality", self)
         self.button_Mid.setStyleSheet("color: white; font-size: 16px;")
         Radiobox.addWidget(self.button_Mid)
 
+        # Create the high quality radio button
         self.button_High = QRadioButton("High Quality (Default)", self)
         self.button_High.setStyleSheet("color: white; font-size: 16px;")
         self.button_High.setChecked(True)
@@ -79,14 +87,17 @@ class App(QWidget):
         # Add the horizontal box layout to the existing layout
         layout.addLayout(Radiobox)
 
+        # Create a status label to show the progress
         self.status_label = QLabel('', self)
         self.status_label.setStyleSheet("color: white; font-size: 16px;")
         layout.addWidget(self.status_label)
 
+        # Create a button to open the image
         self.button_open = QPushButton('Open Image', self)
         self.button_open.clicked.connect(self.open_image)
         layout.addWidget(self.button_open)
 
+        # Create a button to save the image
         self.button_save = QPushButton('Save Image', self)
         self.button_save.clicked.connect(self.save_image)
         layout.addWidget(self.button_save)
@@ -94,7 +105,8 @@ class App(QWidget):
         # Add a progress bar
         self.progress_bar = QProgressBar(self)
         layout.addWidget(self.progress_bar)
-
+        
+        # some styling 
         self.setStyleSheet("""
             QPushButton {
             background-color: #555;
@@ -124,10 +136,12 @@ class App(QWidget):
             } 
         """)
 
+        # Set the layout alignment
         layout.setAlignment(Qt.AlignCenter)
         self.setGeometry(100, 100, 900, 700)  # Adjust the window size here
         self.show()
-
+    
+    # function to check the radio button, which one is selected
     def check_radio(self):
         if self.loq_radio.isChecked():
             return 'low'
@@ -155,6 +169,7 @@ class App(QWidget):
         # Set the palette
         self.setPalette(palette)
 
+    # function to play the music
     def play_music(self):
         # Load a music file
         url = QUrl.fromLocalFile('Complete.mp3')
@@ -163,6 +178,7 @@ class App(QWidget):
         # Start playing
         self.player.play()
 
+    # function to set the quality of the image by the selected radio button
     def set_quality(self):
         if self.button_Low.isChecked():
             self.user_depth = 6 
