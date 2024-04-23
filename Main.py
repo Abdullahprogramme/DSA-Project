@@ -1,29 +1,9 @@
 import numpy as np 
 from PIL import Image, ImageDraw
 
-MAX_DEPTH = 8
-DETAIL_THRESHOLD = 5 #13
-SIZE_MULTIPLIER = 1
-
-def Average_Colour(image):
-    """
-    Description:
-        Calculates the average color of an image represented in PIL format.
-
-    Args:
-        We are giving an image.
-
-    Returns:
-        A tuple of three integers representing the average red, green, and blue values for the entire image.
-    """
-
-
-    image_arr = np.asarray(image) # convert image to np array
-    # get average of whole image
-    avg_color_per_row = np.average(image_arr, axis=0)
-    avg_color = np.average(avg_color_per_row, axis=0) 
-
-    return (int(avg_color[0]), int(avg_color[1]), int(avg_color[2]))
+# MAX_DEPTH = 9
+# DETAIL_THRESHOLD = 13
+# SIZE_MULTIPLIER = 1
 
 def Weighted_Average(histogram):
     total = sum(histogram)
@@ -54,6 +34,26 @@ def Get_Detail(histogram):
     detail_intensity = red_detail * 0.2989 + green_detail * 0.5870 + blue_detail * 0.1140  # weighted average of the three colour channels for eye sensitivity
 
     return detail_intensity
+
+def Average_Colour(image):
+    """
+    Description:
+        Calculates the average color of an image represented in PIL format.
+
+    Args:
+        We are giving an image.
+
+    Returns:
+        A tuple of three integers representing the average red, green, and blue values for the entire image.
+    """
+
+
+    image_arr = np.asarray(image) # convert image to np array
+    # get average of whole image
+    avg_color_per_row = np.average(image_arr, axis=0)
+    avg_color = np.average(avg_color_per_row, axis=0) 
+
+    return (int(avg_color[0]), int(avg_color[1]), int(avg_color[2]))
 
 def Quadrant(image, bbox, depth):
     quadrant = {} # dictionary to store the details of the quadrant
@@ -90,7 +90,7 @@ def Split_Quadrant(quadrant, image):
 
     quadrant['children'] = [upper_left, upper_right, lower_left, lower_right] # storing the children of the quadrant in the quadrant dictionary
 
-def Start_QuadTree(image):
+def Start_QuadTree(image, DETAIL_THRESHOLD, MAX_DEPTH):
     '''
     description:
         This function starts the compression of the image by creating a quad tree of the image.
@@ -98,10 +98,10 @@ def Start_QuadTree(image):
         image: input image
     '''
     root = Quadrant(image, image.getbbox(), 0) # creating the root quadrant of the image
-    max_depth = Build(root, image, 0) # building the quad tree of the image
+    max_depth = Build(root, image, 0, DETAIL_THRESHOLD, MAX_DEPTH) # building the quad tree of the image
     return root, max_depth
 
-def Build(root, image, max_depth):
+def Build(root, image, max_depth, DETAIL_THRESHOLD, MAX_DEPTH):
     '''
     description:
         This function builds the quad tree of the input image.
@@ -120,46 +120,8 @@ def Build(root, image, max_depth):
     Split_Quadrant(root, image) # splitting the quadrant into 4 new quadrants
 
     for child in root['children']: # iterating through the children of the quadrant
-        max_depth = Build(child, image, max_depth) # building the quad tree of the child
+        max_depth = Build(child, image, max_depth, DETAIL_THRESHOLD, MAX_DEPTH) # building the quad tree of the child
     return max_depth
-
-def Create_Gif(root, max_depth, file_name, duration=1000, loop=0, show_lines=False):
-    '''
-    description:
-        This function creates a gif of the quad tree.
-    Args:
-        root: dictionary to store the details of the root quadrant
-        max_depth: maximum depth of the quad tree
-        file_name: name of dthe gif file
-        duration: duration of the gif
-        loop: flag to loop the gif
-        show_lines: flag to show the lines in the gif
-    '''
-
-    gif = []
-    end_product_image = Create_Image(root, max_depth, max_depth, show_lines=show_lines)
-
-    for i in range(max_depth):
-        image = Create_Image(root, max_depth, i, show_lines=show_lines)
-        gif.append(image)
-    for _ in range(4):
-        gif.append(end_product_image)
-    gif[0].save(
-        file_name,
-        save_all=True,
-        append_images=gif[1:],
-        duration=duration, loop=loop)
-    
-def get_leaf_quadrants(root, max_depth, user_depth):
-        if user_depth > max_depth:
-            raise ValueError('A depth larger than the trees depth was given')
-
-        quadrants = []
-
-        # search recursively down the quadtree
-        recursive_search(root, max_depth, quadrants.append)
-
-        return quadrants
 
 def Create_Image(root, max_depth, user_depth, show_lines=False):
     """
@@ -184,7 +146,7 @@ def Create_Image(root, max_depth, user_depth, show_lines=False):
     draw.rectangle((0, 0, width, height), (0, 0, 0))
 
     # Get leaf quadrants for the specified depth
-    leaf_quadrants = get_leaf_quadrants(root, max_depth, user_depth)
+    leaf_quadrants = Get_Leaf_Quadrants(root, max_depth, user_depth)
 
     # Draw rectangle size of quadrant for each leaf quadrant
     for quadrant in leaf_quadrants:
@@ -197,26 +159,87 @@ def Create_Image(root, max_depth, user_depth, show_lines=False):
 
     return image
 
-def recursive_search(tree, quadrant, max_depth, append_leaf):
-        # append if quadrant is a leaf
-        if quadrant.leaf == True or quadrant.depth == max_depth:
-            append_leaf(quadrant)
+def Get_Leaf_Quadrants(root, max_depth, user_depth):
+    '''
+    description:
+        This function gets the leaf quadrants of the quad tree.
+    Args:
+        root: dictionary to store the details of the root quadrant
+        max_depth: maximum depth of the quad tree
+        depth: depth of the quad tree
+    Returns:
+        quadrants: list of leaf quadrants
+    '''
 
-        # otherwise keep recursing
-        elif quadrant.children != None:
-            for child in quadrant.children:
-                recursive_search(tree, child, max_depth, append_leaf)
+    if user_depth > max_depth:
+        raise ValueError('A depth larger than the trees depth was given')
+
+    quandrants = []
+    Recursive_Search(root, user_depth, quandrants.append)
+    return quandrants
+
+def Recursive_Search(quadrant, max_depth, append_leaf):
+    '''
+    description:
+        This function recursively searches the quad tree.
+    Args:
+        quadrant: dictionary to store the details of the quadrant
+        max_depth: maximum depth of the quad tree
+        append_leaf: flag to append the leaf quadrant
+    '''
+
+    if quadrant['leaf'] == True or quadrant['depth'] == max_depth:
+        append_leaf(quadrant)
+    elif quadrant['children'] != None:
+        for child in quadrant['children']:
+            Recursive_Search(child, max_depth, append_leaf)
+
+def Create_Gif(root, max_depth, gif_depth, file_name, duration=1000, loop=0, show_lines=False):
+    '''
+    description:
+        This function creates a gif of the quad tree.
+    Args:
+        root: dictionary to store the details of the root quadrant
+        max_depth: maximum depth of the quad tree
+        file_name: name of the gif file
+        duration: duration of the gif
+        loop: flag to loop the gif
+        show_lines: flag to show the lines in the gif
+    '''
+
+    gif = []
+    end_product_image = Create_Image(root, max_depth, gif_depth, show_lines=show_lines)
+
+    for i in range(gif_depth):
+        image = Create_Image(root, max_depth, i, show_lines=show_lines)
+        gif.append(image)
+    for _ in range(4):
+        gif.append(end_product_image)
+    gif[0].save(
+        file_name,
+        save_all=True,
+        append_images=gif[1:],
+        duration=duration, loop=loop)
 
 
-if __name__ == '__main__':
-    image_path = 'BMI.jpg'
+def main(image_path, user_depth, MAX_DEPTH, DETAIL_THRESHOLD, SIZE_MULTIPLIER):
+    # image_path = 'BMI.jpg'
     image = Image.open(image_path) # opening the image
     image = image.resize((image.size[0] * SIZE_MULTIPLIER, image.size[1] * SIZE_MULTIPLIER)) # resizing the image
 
-    root, max_depth = Start_QuadTree(image)
-    user_depth = 7
+    root, max_depth = Start_QuadTree(image, DETAIL_THRESHOLD, MAX_DEPTH)
     image = Create_Image(root, max_depth, user_depth, show_lines=False)
-    Create_Gif(root, max_depth, "quadtree.gif", show_lines=True)
+    Create_Gif(root, max_depth, user_depth, "quadtree.gif", show_lines=True)
     
-    image.show() # displaying the image
-    image.save('quadtree.png') # saving the image
+    # image.show() # displaying the image
+    # image.save('quadtree.jpg') # saving the image
+    return image
+
+# High quality image:
+# user_depth = 8, MAX_DEPTH = 8, DETAIL_THRESHOLD = 5, SIZE_MULTIPLIER = 1
+
+# Low quality image:
+# user_depth = 6, MAX_DEPTH = 8, DETAIL_THRESHOLD = 10, SIZE_MULTIPLIER = 1
+
+# Medium quality image:
+# user_depth = 7, MAX_DEPTH = 8, DETAIL_THRESHOLD = 8, SIZE_MULTIPLIER = 1
