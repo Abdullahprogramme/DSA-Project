@@ -74,7 +74,8 @@ class App(QWidget):
         self.button_High.setStyleSheet("color: white; font-size: 16px;")
         self.button_High.setChecked(True)
         Radiobox.addWidget(self.button_High)
-       
+
+        Radiobox.setAlignment(Qt.AlignCenter)
         layout.addLayout(Radiobox)
         
         self.button_open = QPushButton('Open Image', self)
