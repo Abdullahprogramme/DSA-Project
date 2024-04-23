@@ -1,9 +1,9 @@
 import numpy as np 
 from PIL import Image, ImageDraw
 
-MAX_DEPTH = 8
-DETAIL_THRESHOLD = 13
-SIZE_MULTIPLIER = 1
+# MAX_DEPTH = 9
+# DETAIL_THRESHOLD = 13
+# SIZE_MULTIPLIER = 1
 
 def Weighted_Average(histogram):
     total = sum(histogram)
@@ -90,7 +90,7 @@ def Split_Quadrant(quadrant, image):
 
     quadrant['children'] = [upper_left, upper_right, lower_left, lower_right] # storing the children of the quadrant in the quadrant dictionary
 
-def Start_QuadTree(image):
+def Start_QuadTree(image, DETAIL_THRESHOLD, MAX_DEPTH):
     '''
     description:
         This function starts the compression of the image by creating a quad tree of the image.
@@ -98,10 +98,10 @@ def Start_QuadTree(image):
         image: input image
     '''
     root = Quadrant(image, image.getbbox(), 0) # creating the root quadrant of the image
-    max_depth = Build(root, image, 0) # building the quad tree of the image
+    max_depth = Build(root, image, 0, DETAIL_THRESHOLD, MAX_DEPTH) # building the quad tree of the image
     return root, max_depth
 
-def Build(root, image, max_depth):
+def Build(root, image, max_depth, DETAIL_THRESHOLD, MAX_DEPTH):
     '''
     description:
         This function builds the quad tree of the input image.
@@ -120,7 +120,7 @@ def Build(root, image, max_depth):
     Split_Quadrant(root, image) # splitting the quadrant into 4 new quadrants
 
     for child in root['children']: # iterating through the children of the quadrant
-        max_depth = Build(child, image, max_depth) # building the quad tree of the child
+        max_depth = Build(child, image, max_depth, DETAIL_THRESHOLD, MAX_DEPTH) # building the quad tree of the child
     return max_depth
 
 def Create_Image(root, max_depth, user_depth, show_lines=False):
@@ -222,16 +222,24 @@ def Create_Gif(root, max_depth, gif_depth, file_name, duration=1000, loop=0, sho
         duration=duration, loop=loop)
 
 
-def main(image_path):
+def main(image_path, user_depth, MAX_DEPTH, DETAIL_THRESHOLD, SIZE_MULTIPLIER):
     # image_path = 'BMI.jpg'
     image = Image.open(image_path) # opening the image
     image = image.resize((image.size[0] * SIZE_MULTIPLIER, image.size[1] * SIZE_MULTIPLIER)) # resizing the image
 
-    root, max_depth = Start_QuadTree(image)
-    user_depth = 7
+    root, max_depth = Start_QuadTree(image, DETAIL_THRESHOLD, MAX_DEPTH)
     image = Create_Image(root, max_depth, user_depth, show_lines=False)
     Create_Gif(root, max_depth, user_depth, "quadtree.gif", show_lines=True)
     
     # image.show() # displaying the image
     # image.save('quadtree.jpg') # saving the image
     return image
+
+# High quality image:
+# user_depth = 8, MAX_DEPTH = 8, DETAIL_THRESHOLD = 5, SIZE_MULTIPLIER = 1
+
+# Low quality image:
+# user_depth = 6, MAX_DEPTH = 8, DETAIL_THRESHOLD = 10, SIZE_MULTIPLIER = 1
+
+# Medium quality image:
+# user_depth = 7, MAX_DEPTH = 8, DETAIL_THRESHOLD = 8, SIZE_MULTIPLIER = 1
