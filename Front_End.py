@@ -52,7 +52,7 @@ class App(QWidget):
         layout.addLayout(image_layout)
 
         # Create a horizontal box layout
-        # hbox = QHBoxLayout()
+        Radiobox = QHBoxLayout()
 
         self.instructions_label = QLabel("Please select your preference", self)
         self.instructions_label.setWordWrap(True)
@@ -62,22 +62,22 @@ class App(QWidget):
 
         self.button_Low = QRadioButton("Low Quality", self)
         self.button_Low.setStyleSheet("color: white; font-size: 16px;")
-        layout.addWidget(self.button_Low)
+        Radiobox.addWidget(self.button_Low)
 
         self.button_Mid = QRadioButton("Medium Quality", self)
         self.button_Mid.setStyleSheet("color: white; font-size: 16px;")
-        layout.addWidget(self.button_Mid)
+        Radiobox.addWidget(self.button_Mid)
 
         self.button_High = QRadioButton("High Quality (Default)", self)
         self.button_High.setStyleSheet("color: white; font-size: 16px;")
         self.button_High.setChecked(True)
-        layout.addWidget(self.button_High)
+        Radiobox.addWidget(self.button_High)
 
         # # Set the alignment to center
-        # hbox.setAlignment(Qt.AlignCenter)
+        Radiobox.setAlignment(Qt.AlignCenter)
 
         # Add the horizontal box layout to the existing layout
-        # layout.addLayout(hbox)
+        layout.addLayout(Radiobox)
 
         self.status_label = QLabel('', self)
         self.status_label.setStyleSheet("color: white; font-size: 16px;")
@@ -177,11 +177,18 @@ class App(QWidget):
         else:
             self.user_depth = 9
             self.MAX_DEPTH = 9
-            self.DETAIL_THRESHOLD = 3
+            self.DETAIL_THRESHOLD = 5
             self.SIZE_MULTIPLIER = 1
         
         return self.user_depth, self.MAX_DEPTH, self.DETAIL_THRESHOLD, self.SIZE_MULTIPLIER
 
+    # Helper function to convert size in bytes to appropriate unit
+    def convert_size(self, size_bytes):
+        if size_bytes < 1048576:
+            return f"{size_bytes / 1024:.2f} KB"
+        else:
+            return f"{size_bytes / 1048576:.2f} MB"
+        
     def open_image(self):
         options = QFileDialog.Options()
         options |= QFileDialog.ReadOnly
@@ -224,9 +231,11 @@ class App(QWidget):
             # Display the sizes of the images
             original_size = os.path.getsize(self.image_path) / 1024  # size in KB
             compressed_size = os.path.getsize(temp_file.name) / 1024  # size in KB
-            
-            self.label_original_size.setText(f'Original size: {original_size:.2f} KB')
-            self.label_compressed_size.setText(f'Compressed size: {compressed_size:.2f} KB')
+            original_size_str = self.convert_size(original_size)
+            compressed_size_str = self.convert_size(compressed_size)
+
+            self.label_original_size.setText(f'Original size: {original_size_str}')
+            self.label_compressed_size.setText(f'Compressed size: {compressed_size_str}')
 
 
     def save_image(self):
