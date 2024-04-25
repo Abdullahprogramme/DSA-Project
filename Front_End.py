@@ -245,8 +245,8 @@ class App(QWidget):
             self.label_compressed.setPixmap(pixmap_compressed)
 
             # Display the sizes of the images
-            original_size = os.path.getsize(self.image_path) / 1024  # size in KB
-            compressed_size = os.path.getsize(temp_file.name) / 1024  # size in KB
+            original_size = os.path.getsize(self.image_path)
+            compressed_size = os.path.getsize(temp_file.name) 
             original_size_str = self.convert_size(original_size)
             compressed_size_str = self.convert_size(compressed_size)
 
