@@ -1,9 +1,6 @@
 import numpy as np 
 from PIL import Image, ImageDraw
 
-# MAX_DEPTH = 9
-# DETAIL_THRESHOLD = 13
-# SIZE_MULTIPLIER = 1
 
 def Weighted_Average(histogram):
     total = sum(histogram)
