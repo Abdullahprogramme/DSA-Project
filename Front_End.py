@@ -2,7 +2,7 @@ import os
 import time
 import tempfile
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QFileDialog, QLabel, QProgressBar, QRadioButton, QSizePolicy
-from PyQt5.QtCore import Qt, QUrl, QRect
+from PyQt5.QtCore import Qt, QUrl
 from PyQt5.QtGui import QPixmap, QPalette, QBrush
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 from Main import main
