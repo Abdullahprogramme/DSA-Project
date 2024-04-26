@@ -181,18 +181,15 @@ class App(QWidget):
     # function to set the quality of the image by the selected radio button
     def set_quality(self):
         if self.button_Low.isChecked():
-            self.user_depth = 6 
-            self.MAX_DEPTH = 9
+            self.user_depth = self.MAX_DEPTH = 6
             self.DETAIL_THRESHOLD = 10
             self.SIZE_MULTIPLIER = 1
         elif self.button_Mid.isChecked():
-            self.user_depth = 7
-            self.MAX_DEPTH = 9
+            self.user_depth = self.MAX_DEPTH = 7
             self.DETAIL_THRESHOLD = 7
             self.SIZE_MULTIPLIER = 1
         else:
-            self.user_depth = 9
-            self.MAX_DEPTH = 9
+            self.user_depth = self.MAX_DEPTH = 9
             self.DETAIL_THRESHOLD = 5
             self.SIZE_MULTIPLIER = 1
         
